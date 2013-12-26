@@ -6,10 +6,23 @@ from bs4 import BeautifulSoup
 import re
 import firebug_proxy
 import sys
+import image_proxy
 import MySQLdb
+import os
+
+def image_finder(soup,movie_name,movie_link):
+    #print movie_link
+    try:
+        data = soup.select('a[href="%s"]'%movie_link)
+        image_link = data[0].img["src"].encode("ascii","ignore")
+        image_proxy.image("achieves_dir",image_link,movie_name)
+        return image_link
+    except:
+        return " image not get for: "+movie_link
 
 
-def archivesyou(db,cursor,links,archives_name, archives_link,movie_name,movie_link,watch,watch_link):
+
+def archivesyou(db,cursor,links,archives_name, archives_link,movie_name,movie_link,watch,watch_link,image_link):
     page = proxy_module.main(watch_link)
     soup = BeautifulSoup(page)
     page.close() 
@@ -25,14 +38,14 @@ def archivesyou(db,cursor,links,archives_name, archives_link,movie_name,movie_li
     print 
     #print archives_name, archives_link,movie_name,movie_link,watch,watch_link
     #print archives_name,movie_name,watch,em_link
-    sql = """insert ignore into archives(archives,archives_link,movie,movie_link,watch,watch_link) values("%s","%s","%s","%s","%s","%s")"""%(archives_name,archives_link,movie_name,movie_link,watch,em_link)
+    sql = """insert ignore into archives(archives,archives_link,movie,movie_link,watch,watch_link,image_link) values("%s","%s","%s","%s","%s","%s","%s")"""%(archives_name,archives_link,movie_name,movie_link,watch,em_link,image_link)
     print sql
     print sql
     cursor.execute(sql)
     db.commit()
 
 
-def archivesdaily(db,cursor,links,archives_name, archives_link,movie_name,movie_link,watch,watch_link):
+def archivesdaily(db,cursor,links,archives_name, archives_link,movie_name,movie_link,watch,watch_link,image_link):
     page = proxy_module.main(watch_link)
     soup = BeautifulSoup(page)
     page.close()
@@ -47,7 +60,7 @@ def archivesdaily(db,cursor,links,archives_name, archives_link,movie_name,movie_
     print 
     #print archives_name, archives_link,movie_name,movie_link,watch,watch_link
     #print archives_name,archives_link,movie_name,watch,em_link
-    sql = """insert ignore into archives(archives,archives_link,movie,movie_link,watch,watch_link) values("%s","%s","%s","%s","%s","%s")"""%(archives_name,archives_link,movie_name,movie_link,watch,em_link)
+    sql = """insert ignore into archives(archives,archives_link,movie,movie_link,watch,watch_link,image_link) values("%s","%s","%s","%s","%s","%s","%s")"""%(archives_name,archives_link,movie_name,movie_link,watch,em_link,image_link)
     print sql
     cursor.execute(sql)
     db.commit()
@@ -59,6 +72,8 @@ def archives4(db,cursor,links,archives_name, archives_link,movie_name,movie_link
     page = proxy_module.main(movie_link)
     soup = BeautifulSoup(page)
     page.close()
+    #print movie_name,movie_link
+    image_link = image_finder(soup,movie_name,movie_link)
     data = soup.find_all("strong")
     for l in data:
         s = l.get_text().encode("ascii","ignore")
@@ -72,7 +87,7 @@ def archives4(db,cursor,links,archives_name, archives_link,movie_name,movie_link
                 #print m.get_text(),m.get("href") ok here
                 watch = m.get_text().encode("ascii","ignore")
                 watch_link = m.get("href").encode("ascii","ignore")
-                archivesdaily(db,cursor,links,archives_name, archives_link,movie_name,movie_link,watch,watch_link)
+                archivesdaily(db,cursor,links,archives_name, archives_link,movie_name,movie_link,watch,watch_link,image_link)
             #sys.exit()
         elif re.search(r"Youtube",s):
             print 
@@ -84,7 +99,7 @@ def archives4(db,cursor,links,archives_name, archives_link,movie_name,movie_link
                 #print m.get_text(),m.get("href") ok here
                 watch = m.get_text().encode("ascii","ignore")
                 watch_link = m.get("href").encode("ascii","ignore")
-                archivesyou(db,cursor,links,archives_name, archives_link,movie_name,movie_link,watch,watch_link)
+                archivesyou(db,cursor,links,archives_name, archives_link,movie_name,movie_link,watch,watch_link,image_link)
             #sys.exit() 
         else:
             pass
@@ -133,6 +148,10 @@ def archives(db,cursor):
 
 
 if __name__=="__main__":
+    try:
+        os.mkdir("achieves_dir")
+    except:
+        pass
     db = MySQLdb.connect("localhost","root","india123","hindi_link")
     cursor = db.cursor()
     archives(db, cursor)
