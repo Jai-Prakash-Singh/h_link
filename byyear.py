@@ -6,10 +6,23 @@ from bs4 import BeautifulSoup
 import re
 import firebug_proxy
 import sys
+import image_proxy
 import MySQLdb
+import os 
+
+def image_finder(soup,movie_name,movie_link):
+    #print movie_link
+    try:
+        data = soup.select('a[href="%s"]'%movie_link)
+        image_link = data[0].img["src"].encode("ascii","ignore")
+        image_proxy.image("achieves_dir",image_link,movie_name)
+        return image_link
+    except:
+        return " image not get for: "+movie_link
 
 
-def yearyou(db,cursor,links,year_name, year_link,movie_name,movie_link,watch,watch_link):
+
+def yearyou(db,cursor,links,year_name, year_link,movie_name,movie_link,watch,watch_link,image_link):
     page = proxy_module.main(watch_link)
     soup = BeautifulSoup(page)
     page.close() 
@@ -25,13 +38,13 @@ def yearyou(db,cursor,links,year_name, year_link,movie_name,movie_link,watch,wat
     print 
     #print year_name, year_link,movie_name,movie_link,watch,watch_link
     #print year_name,movie_name,watch,em_link
-    sql = """insert ignore into year(year,year_link,movie,movie_link,watch,watch_link) values("%s","%s","%s","%s","%s","%s")"""%(year_name,year_link,movie_name,movie_link,watch,em_link)
+    sql = """insert ignore into year(year,year_link,movie,movie_link,watch,watch_link,image_link) values("%s","%s","%s","%s","%s","%s","%s")"""%(year_name,year_link,movie_name,movie_link,watch,em_link,image_link)
     print sql
     cursor.execute(sql)
     db.commit()
 
 
-def yeardaily(db,cursor,links,year_name, year_link,movie_name,movie_link,watch,watch_link):
+def yeardaily(db,cursor,links,year_name, year_link,movie_name,movie_link,watch,watch_link,image_link):
     page = proxy_module.main(watch_link)
     soup = BeautifulSoup(page)
     page.close()
@@ -46,7 +59,7 @@ def yeardaily(db,cursor,links,year_name, year_link,movie_name,movie_link,watch,w
     print 
     #print year_name, year_link,movie_name,movie_link,watch,watch_link
     #print year_name,year_link,movie_name,watch,em_link
-    sql = """insert ignore into year(year,year_link,movie,movie_link,watch,watch_link) values("%s","%s","%s","%s","%s","%s")"""%(year_name,year_link,movie_name,movie_link,watch,em_link)
+    sql = """insert ignore into year(year,year_link,movie,movie_link,watch,watch_link,image_link) values("%s","%s","%s","%s","%s","%s","%s")"""%(year_name,year_link,movie_name,movie_link,watch,em_link,image_link)
     print sql
     cursor.execute(sql)
     db.commit()
@@ -58,6 +71,7 @@ def year4(db,cursor,links,year_name, year_link,movie_name,movie_link):
     page = proxy_module.main(movie_link)
     soup = BeautifulSoup(page)
     page.close()
+    image_link = image_finder(soup,movie_name,movie_link)
     data = soup.find_all("strong")
     for l in data:
         s = l.get_text().encode("ascii","ignore")
@@ -71,7 +85,7 @@ def year4(db,cursor,links,year_name, year_link,movie_name,movie_link):
                 #print m.get_text(),m.get("href") ok here
                 watch = m.get_text().encode("ascii","ignore")
                 watch_link = m.get("href").encode("ascii","ignore")
-                yeardaily(db,cursor,links,year_name, year_link,movie_name,movie_link,watch,watch_link)
+                yeardaily(db,cursor,links,year_name, year_link,movie_name,movie_link,watch,watch_link,image_link)
             #sys.exit()
         elif re.search(r"Youtube",s):
             print 
@@ -83,7 +97,7 @@ def year4(db,cursor,links,year_name, year_link,movie_name,movie_link):
                 #print m.get_text(),m.get("href") ok here
                 watch = m.get_text().encode("ascii","ignore")
                 watch_link = m.get("href").encode("ascii","ignore")
-                yearyou(db,cursor,links,year_name, year_link,movie_name,movie_link,watch,watch_link)
+                yearyou(db,cursor,links,year_name, year_link,movie_name,movie_link,watch,watch_link,image_link)
             #sys.exit() 
         else:
             pass
@@ -132,6 +146,10 @@ def year(db,cursor):
 
 
 if __name__=="__main__":
+    try:
+        os.mkdir("byyear_dir")
+    except:
+        pass
     db = MySQLdb.connect("localhost","root","india123","hindi_link")
     cursor = db.cursor()
     year(db, cursor)
