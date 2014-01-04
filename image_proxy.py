@@ -14,7 +14,7 @@ def image(category,link,image_title):
         ip_port = choice(ip_list)
         try:
             #ip_port = choice(ip_list)
-            proxy_list = {'http': r'http://vinku:india123@'+ip_port,'https': r'https://vinku:india123@'+ip_port}
+            proxy_list = {'http': r'http://xxxx:xxxx@'+ip_port,'https': r'https://xxxx:xxxx@'+ip_port}
             proxy = urllib2.ProxyHandler(proxy_list)
             auth = urllib2.HTTPBasicAuthHandler()
             opener = urllib2.build_opener(proxy, auth, urllib2.HTTPHandler)
