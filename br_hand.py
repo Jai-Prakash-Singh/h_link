@@ -34,7 +34,7 @@ class machanize_handler():
         while loop is True:
             try:
                 ip_port = choice(self.ip_list)
-                self.br.set_proxies({"http": "vinku:india123@"+ip_port})
+                self.br.set_proxies({"http": "xxxx:xxxx@"+ip_port})
                 loop = False           
             except:
                 pass
