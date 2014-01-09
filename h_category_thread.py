@@ -25,17 +25,17 @@ import br_image
 logging.basicConfig(level=logging.DEBUG,format='%(asctime)s (%(threadName)-2s) %(message)s',)
 
 def in_file(data):
-    with open('h_category.csv', 'ab+') as csvfile:
+    with open('h_category2.csv', 'ab+') as csvfile:
         spamwriter = csv.writer(csvfile)
         spamwriter.writerow(data)
     csvfile.close()
 
 def image_finder(soup,movie_name,movie_link):
-    image_link = "image not get for: "+movie_link
     data = soup.select('a[href="%s"]'%movie_link)
     image_link = data[0].img["src"].encode("ascii","ignore")
-    #image_proxy.image("achieves_dir",image_link,movie_name)
-    
+    start  = image_link.find("img")
+    image_link = "http://"+image_link[start:]
+    #image_proxy.image("achieves_dir",image_link,movie_name)   
     filename = "achieves_dir2/"+movie_name  
     #br = br_image.main(image_link,filename)
     try:
